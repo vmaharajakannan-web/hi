@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -58,7 +59,7 @@
       text-align:center;
       font-size: clamp(16px, 2.2vw, 20px);
       line-height:1.35;
-      min-height: 74px;
+      min-height: 84px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -66,18 +67,25 @@
       gap:10px;
     }
 
-    .secret-link{
+    /* secret reveal button (visible after 5 NOs) */
+    .secret-btn{
       display:none;
-      font-size:13px;
-      opacity:.75;
-      text-decoration:underline;
+      font-size:14px;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.08);
+      background:#ffffff;
+      color:var(--text);
+      box-shadow: 0 10px 22px rgba(0,0,0,.10);
       cursor:pointer;
-      user-select:none;
+      font-weight:800;
     }
+    .secret-btn:hover{ transform: translateY(-1px); }
+
     .secret-msg{
       display:none;
       font-size:14px;
-      opacity:.85;
+      opacity:.9;
       padding-top:2px;
     }
 
@@ -192,9 +200,9 @@
     <div class="bubble">
       <div id="line">Hello Kadhal 👀❤️</div>
 
-      <!-- secret link + message -->
-      <div class="secret-link" id="secretLink">Fine... show me the truth</div>
-      <div class="secret-msg" id="secretMsg">I just wanted you to say yes because I love you dumbly.</div>
+      <!-- visible button after 5 NO tries -->
+      <button type="button" class="secret-btn" id="secretBtn">Click here</button>
+      <div class="secret-msg" id="secretMsg">I just wanted you to say yes because I love you d punda</div>
     </div>
 
     <div class="controls" id="arena">
@@ -205,7 +213,6 @@
     <div class="result" id="result">
       <p id="finalMsg"></p>
 
-      <!-- date plan menu -->
       <div class="plan" id="planMenu">
         <button type="button" data-plan="food">🍕 Food date</button>
         <button type="button" data-plan="movie">🎬 Movie + cuddles</button>
@@ -222,7 +229,6 @@
     const to = params.get("to") || "Kadhal";
     document.getElementById("theirName").textContent = to;
 
-    // Dialogues change ONLY when they try to click/hover/tap NO
     const lines = [
       "Hello Kadhal 👀❤️",
       "Happy almost 7 months 💕",
@@ -241,7 +247,7 @@
     const noTalk = ["No 🙃", "No?? 😳", "Stop 😭", "pls", "ok fine 😔"];
 
     const lineEl = document.getElementById("line");
-    const secretLink = document.getElementById("secretLink");
+    const secretBtn = document.getElementById("secretBtn");
     const secretMsg = document.getElementById("secretMsg");
 
     let lineIndex = 0;
@@ -255,13 +261,12 @@
       lineEl.classList.add("shake");
     }
 
-    // Runaway + shrinking NO button
     const arena = document.getElementById("arena");
     const noBtn = document.getElementById("noBtn");
 
-    let noScale = 1.9;           // starts BIG
-    const shrinkFactor = 0.84;   // shrinks each attempt
-    const minScale = 0.18;       // minimum tiny size
+    let noScale = 1.9;
+    const shrinkFactor = 0.84;
+    const minScale = 0.18;
     const baseTranslateX = 160;
 
     function setNoTransform() {
@@ -269,19 +274,17 @@
     }
 
     function updateNoTalk() {
-      const idx = Math.min(noTalk.length - 1, noAttempts); // climb through phrases
+      const idx = Math.min(noTalk.length - 1, noAttempts);
       noBtn.textContent = noTalk[idx];
     }
 
     function maybeShowSecret() {
-      if (noAttempts >= 5) secretLink.style.display = "inline";
+      if (noAttempts >= 5) secretBtn.style.display = "inline-flex";
     }
 
     function moveAndShrinkNo() {
-      // count attempts
       noAttempts++;
 
-      // update dialogue + no button label
       nextLine();
       updateNoTalk();
       maybeShowSecret();
@@ -312,10 +315,10 @@
       updateNoTalk();
     });
 
-    // Secret link reveal
-    secretLink.addEventListener("click", () => {
+    // Secret reveal button
+    secretBtn.addEventListener("click", () => {
       secretMsg.style.display = "block";
-      secretLink.style.display = "none";
+      secretBtn.style.display = "none";
     });
 
     // YES button message + petal rain + date plan menu
@@ -330,12 +333,9 @@
       finalMsg.textContent =
         `Hi ${to} , happy Kadhalar Dinam (thats valentines day btw) (since your vadaki) Love you Mwhaaaaa`;
 
-      // show date plan menu
       planMenu.style.display = "flex";
-
       startPetalRain();
 
-      // freeze NO after YES
       noBtn.style.pointerEvents = "none";
       noBtn.style.opacity = "0.55";
     });
@@ -354,11 +354,10 @@
       planMsg.style.display = "block";
       planMsg.textContent = text;
 
-      // extra petals each time they pick a plan
       startPetalRain(3500);
     });
 
-    // 🌸 Rose-petal rain from the TOP
+    // 🌸 Petal rain from the TOP
     const canvas = document.getElementById("petals");
     const ctx = canvas.getContext("2d");
     let W, H, DPR;
@@ -375,9 +374,9 @@
 
     let petals = [];
     let spawnUntil = 0;
+    let ticking = false;
 
     function spawnPetal() {
-      // petal-ish emoji set (works everywhere without images)
       const glyphs = ["🌸", "💮", "🌺", "🌷", "🌹"];
       const g = glyphs[Math.floor(Math.random() * glyphs.length)];
 
@@ -397,18 +396,15 @@
     }
 
     function startPetalRain(durationMs = 6000) {
-      // don't wipe existing petals; just extend rain for nicer effect
       spawnUntil = Math.max(spawnUntil, performance.now() + durationMs);
 
-      // quick burst
       for (let i=0; i<30; i++) spawnPetal();
 
-      requestAnimationFrame(tickPetals);
+      if (!ticking) requestAnimationFrame(tickPetals);
     }
 
-    let ticking = false;
     function tickPetals(t) {
-      if (ticking) return; // prevent double loops
+      if (ticking) return;
       ticking = true;
 
       (function loop(now){
@@ -450,3 +446,4 @@
   </script>
 </body>
 </html>
+```
