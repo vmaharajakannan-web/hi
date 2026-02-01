@@ -1,4 +1,3 @@
-```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -38,6 +37,7 @@
       padding:40px 34px;
       box-shadow: 0 20px 60px rgba(0,0,0,.18);
       position:relative;
+      z-index:2;
     }
 
     h1{
@@ -118,10 +118,12 @@
     }
     .result p{ margin:0; font-size: 18px; line-height:1.35; }
 
+    /* Rose layer */
     canvas{
       position:fixed;
       inset:0;
       pointer-events:none;
+      z-index:1;
     }
 
     .heart{
@@ -145,7 +147,7 @@
   </style>
 </head>
 <body>
-  <canvas id="confetti"></canvas>
+  <canvas id="roses"></canvas>
 
   <div class="card">
     <h1>
@@ -197,13 +199,13 @@
       lineEl.classList.add("shake");
     }
 
-    // Runaway + shrinking NO button (YES stays same size)
+    // Runaway + shrinking NO button
     const arena = document.getElementById("arena");
     const noBtn = document.getElementById("noBtn");
 
-    let noScale = 1.9;           // starts BIG
-    const shrinkFactor = 0.84;   // shrinks each attempt
-    const minScale = 0.18;       // minimum tiny size
+    let noScale = 1.9;
+    const shrinkFactor = 0.84;
+    const minScale = 0.18;
     const baseTranslateX = 160;
 
     function setNoTransform() {
@@ -215,7 +217,6 @@
 
       const rect = arena.getBoundingClientRect();
       const btnRect = noBtn.getBoundingClientRect();
-
       const maxX = rect.width - btnRect.width;
       const maxY = rect.height - btnRect.height;
 
@@ -239,7 +240,7 @@
       setNoTransform();
     });
 
-    // YES button final message
+    // YES message + ROSES (no confetti exists in this file)
     const yesBtn = document.getElementById("yesBtn");
     const result = document.getElementById("result");
     const finalMsg = document.getElementById("finalMsg");
@@ -255,8 +256,8 @@
       noBtn.style.opacity = "0.55";
     });
 
-    // 🌹 Roses animation (from BOTH sides)
-    const canvas = document.getElementById("confetti");
+    // 🌹 ROSES FROM BOTH SIDES
+    const canvas = document.getElementById("roses");
     const ctx = canvas.getContext("2d");
     let W, H, DPR;
 
@@ -275,24 +276,23 @@
 
     function rosesBurst(){
       roses = [];
-      const perSide = 55; // increase if you want more roses
+      const perSide = 60;
+
       const yMin = H * 0.25;
-      const yMax = H * 0.8;
+      const yMax = H * 0.85;
 
-      function spawn(side){ // side: "L" or "R"
-        const fromLeft = side === "L";
-        const x = fromLeft ? -30 * DPR : W + 30 * DPR;
+      function spawn(fromLeft){
+        const x = fromLeft ? -80 * DPR : W + 80 * DPR;
         const y = rand(yMin, yMax);
-        const size = rand(24, 44) * DPR;
+        const size = rand(26, 52) * DPR;
 
-        // velocity: toward center + a bit upward
-        const vx = (fromLeft ? 1 : -1) * rand(5.5, 10.5) * DPR;
-        const vy = rand(-8.5, -3.5) * DPR;
+        const vx = (fromLeft ? 1 : -1) * rand(7, 13) * DPR;
+        const vy = rand(-8.5, -3) * DPR;
 
         roses.push({
           x, y, vx, vy,
-          g: rand(0.18, 0.32) * DPR,    // gravity
-          drag: rand(0.985, 0.995),     // slight air drag
+          g: rand(0.18, 0.32) * DPR,
+          drag: rand(0.985, 0.995),
           size,
           rot: rand(0, Math.PI * 2),
           vrot: rand(-0.08, 0.08),
@@ -301,8 +301,8 @@
       }
 
       for(let i=0;i<perSide;i++){
-        spawn("L");
-        spawn("R");
+        spawn(true);
+        spawn(false);
       }
 
       if (!animating) {
@@ -314,7 +314,6 @@
     function tickRoses(){
       ctx.clearRect(0, 0, W, H);
 
-      // draw
       for (const p of roses) {
         p.vy += p.g;
         p.vx *= p.drag;
@@ -331,7 +330,7 @@
         ctx.translate(p.x, p.y);
         ctx.rotate(p.rot);
 
-        // emoji roses
+        // emoji rose
         ctx.font = `${p.size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",system-ui`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -340,11 +339,10 @@
         ctx.restore();
       }
 
-      // keep only visible
       roses = roses.filter(p =>
         p.a > 0 &&
-        p.x > -200 * DPR && p.x < W + 200 * DPR &&
-        p.y < H + 200 * DPR
+        p.x > -300 * DPR && p.x < W + 300 * DPR &&
+        p.y < H + 300 * DPR
       );
 
       if (roses.length) {
@@ -357,4 +355,3 @@
   </script>
 </body>
 </html>
-```
